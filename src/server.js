@@ -52,8 +52,6 @@ server.listen(PORT, () =>
 );
 
 
-app.use("/api/test", require("./routes/testRoutes"));
-
 app.use("/api/admin", require("./routes/adminRoutes"));
 
 app.use("/api/properties", require("./routes/propertyRoutes"));
