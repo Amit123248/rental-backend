@@ -12,7 +12,7 @@ const {
 const {
   protect,
   authorizeRoles,
-} = require("../middleware/authmiddleware");
+} = require("../middleware/authMiddleware");
 
 const { unblockUser } = require("../controllers/adminController");
 

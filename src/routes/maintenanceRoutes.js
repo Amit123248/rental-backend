@@ -10,7 +10,7 @@ const {
 const {
   protect,
   authorizeRoles,
-} = require("../middleware/authmiddleware");
+} = require("../middleware/authMiddleware");
 
 /**
  * TENANT creates request
