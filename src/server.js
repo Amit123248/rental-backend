@@ -1,29 +1,57 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const helmet = require("helmet");
+const http = require("http");
+const { Server } = require("socket.io");
+
 const connectDB = require("./config/db");
 const apiLimiter = require("./middleware/rateLimiter");
-const helmet = require("helmet");
 const errorHandler = require("./middleware/errorHandler");
 
 dotenv.config();
+
+// Connect DB (safe – no process.exit)
 connectDB();
 
 const app = express();
 
+/* =======================
+   GLOBAL MIDDLEWARES
+======================= */
 app.use(cors());
+app.use(helmet());
 app.use(express.json());
+app.use("/api", apiLimiter);
 
+/* =======================
+   HEALTH CHECK
+======================= */
 app.get("/", (req, res) => {
   res.send("🚀 Rental Property Backend Running");
 });
 
+/* =======================
+   ROUTES
+======================= */
 app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/admin", require("./routes/adminRoutes"));
+app.use("/api/properties", require("./routes/propertyRoutes"));
+app.use("/api/applications", require("./routes/rentalApplicationRoutes"));
+app.use("/api/leases", require("./routes/leaseRoutes"));
+app.use("/api/payments", require("./routes/paymentRoutes"));
+app.use("/api/maintenance", require("./routes/maintenanceRoutes"));
+app.use("/api/admin/dashboard", require("./routes/adminDashboardRoutes"));
 
+/* =======================
+   ERROR HANDLER (LAST)
+======================= */
+app.use(errorHandler);
+
+/* =======================
+   SOCKET.IO SETUP
+======================= */
 const PORT = process.env.PORT || 5000;
-const http = require("http");
-const { Server } = require("socket.io");
-
 const server = http.createServer(app);
 
 const io = new Server(server, {
@@ -47,28 +75,9 @@ io.on("connection", (socket) => {
 
 app.set("io", io);
 
-server.listen(PORT, () =>
-  console.log(`🔥 Server running on port ${PORT}`)
-);
-
-
-app.use("/api/admin", require("./routes/adminRoutes"));
-
-app.use("/api/properties", require("./routes/propertyRoutes"));
-
-app.use("/api/applications", require("./routes/rentalApplicationRoutes"));
-
-app.use("/api/leases", require("./routes/leaseRoutes"));
-
-app.use("/api/payments", require("./routes/paymentRoutes"));
-
-app.use("/api/maintenance", require("./routes/maintenanceRoutes"));
-
-app.use("/api/admin/dashboard", require("./routes/adminDashboardRoutes"));
-
-app.use("/api", apiLimiter);
-
-
-app.use(helmet());
-
-app.use(errorHandler);
+/* =======================
+   START SERVER
+======================= */
+server.listen(PORT, () => {
+  console.log(`🔥 Server running on port ${PORT}`);
+});
